@@ -4,23 +4,23 @@ import 'dart:math';
 import 'package:flutter_socket_io/flutter_socket_io.dart';
 import 'package:flutter_socket_io/socket_io_manager.dart';
 
-void main(){
+void main() {
   runApp(new MaterialApp(
     home: new MyApp(),
   ));
 }
 
-class ChatMessage{
+class ChatMessage {
   String date, msg, id;
   ChatMessage({this.date, this.msg, this.id});
 }
 
-class MyApp extends StatefulWidget{
+class MyApp extends StatefulWidget {
   @override
   _State createState() => new _State();
 }
 
-class _State extends State<MyApp>{
+class _State extends State<MyApp> {
   SocketIO socketIO;
   TextEditingController inputMsg;
   String randomID = '';
@@ -30,15 +30,17 @@ class _State extends State<MyApp>{
   @override
   void initState() {
     var rng = new Random();
-    randomID = 'USER'+rng.nextInt(10000).toString();
+    randomID = 'USER' + rng.nextInt(10000).toString();
     inputMsg = new TextEditingController();
     initSocketIO();
   }
 
-  initSocketIO(){
+  initSocketIO() {
     //update the domain before using
-    socketIO = SocketIOManager().createSocketIO("http://192.168.2.3:3002", "/room", query: "userId=100", socketStatusCallback: _socketStatus);
-    
+    socketIO = SocketIOManager().createSocketIO(
+        "ec2-3-125-48-69.eu-central-1.compute.amazonaws.com:3000", "/room",
+        query: "userId=100", socketStatusCallback: _socketStatus);
+
     //call init socket before doing anything
     socketIO.init();
 
@@ -56,32 +58,32 @@ class _State extends State<MyApp>{
 
   void _sendMessage() async {
     if (socketIO != null) {
-      String jsonData = '{msg: "'+inputMsg.text+'",id: '+randomID+'}';
+      String jsonData = '{msg: "' + inputMsg.text + '",id: ' + randomID + '}';
       socketIO.sendMessage("send message", jsonData);
       inputMsg.clear();
     }
   }
 
-  void _getMessage(dynamic data){
+  void _getMessage(dynamic data) {
     print(data);
-    Map<String,dynamic> map = new Map<String,dynamic>();
+    Map<String, dynamic> map = new Map<String, dynamic>();
     map = json.decode(data);
     setState(() {
-      listChat.add(new ChatMessage(date: map['date'], msg: map['msg'], id: map['id']));
+      listChat.add(
+          new ChatMessage(date: map['date'], msg: map['msg'], id: map['id']));
     });
   }
 
-  void _getConnections(dynamic data){
+  void _getConnections(dynamic data) {
     print(data);
-    Map<String,dynamic> map = new Map<String, dynamic>();
+    Map<String, dynamic> map = new Map<String, dynamic>();
     map = json.decode(data);
-    setState(()=>conn = map['socket']);
+    setState(() => conn = map['socket']);
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      resizeToAvoidBottomPadding: true,
       resizeToAvoidBottomInset: true,
       appBar: new AppBar(
         title: new Text('Chat Messaging with Socket.io'),
@@ -94,18 +96,18 @@ class _State extends State<MyApp>{
               new Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  new Text('Your ID: '+randomID),
-                  new Text('Total Connections: '+conn.toString())
+                  new Text('Your ID: ' + randomID),
+                  new Text('Total Connections: ' + conn.toString())
                 ],
               ),
               new ListView.builder(
                 physics: ScrollPhysics(),
-                  shrinkWrap: true,
-                  reverse: true,
-                  itemCount: listChat.length,
-                  itemBuilder: ((ctx, idx){
-                    return _msgContainer(listChat[idx]);
-                  }),
+                shrinkWrap: true,
+                reverse: true,
+                itemCount: listChat.length,
+                itemBuilder: ((ctx, idx) {
+                  return _msgContainer(listChat[idx]);
+                }),
               ),
             ],
           ),
@@ -117,18 +119,21 @@ class _State extends State<MyApp>{
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Expanded(
-              flex: 5,
-              child: new Padding(
+                flex: 5,
+                child: new Padding(
                   padding: new EdgeInsets.all(5.0),
-              child: new TextField(
-                controller: inputMsg,
-                decoration: new InputDecoration.collapsed(hintText: 'Send a Message'),
-              ),
-              )
-            ),
+                  child: new TextField(
+                    controller: inputMsg,
+                    decoration: new InputDecoration.collapsed(
+                        hintText: 'Send a Message'),
+                  ),
+                )),
             Expanded(
               flex: 1,
-              child: new FlatButton.icon(onPressed: _sendMessage, icon: Icon(Icons.send), label: new Text('')),
+              child: new FlatButton.icon(
+                  onPressed: _sendMessage,
+                  icon: Icon(Icons.send),
+                  label: new Text('')),
             )
           ],
         ),
@@ -140,32 +145,49 @@ class _State extends State<MyApp>{
     );
   }
 
-  Widget _msgContainer(ChatMessage chat){
-    if (chat.id != randomID){
+  Widget _msgContainer(ChatMessage chat) {
+    if (chat.id != randomID) {
       return new Container(
-        decoration: new BoxDecoration(border: new Border.all(color: Colors.black), borderRadius: new BorderRadius.circular(10.0)),
+        decoration: new BoxDecoration(
+            border: new Border.all(color: Colors.black),
+            borderRadius: new BorderRadius.circular(10.0)),
         margin: new EdgeInsets.all(3.0),
-        padding: new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
+        padding:
+            new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            new Text(chat.id+'('+chat.date+')', style: new TextStyle(color: Colors.grey),),
-            new Text(chat.msg, )
+            new Text(
+              chat.id + '(' + chat.date + ')',
+              style: new TextStyle(color: Colors.grey),
+            ),
+            new Text(
+              chat.msg,
+            )
           ],
         ),
       );
-    }else{
+    } else {
       return new Container(
-        decoration: new BoxDecoration(border: new Border.all(color: Colors.black), borderRadius: new BorderRadius.circular(10.0)),
+        decoration: new BoxDecoration(
+            border: new Border.all(color: Colors.black),
+            borderRadius: new BorderRadius.circular(10.0)),
         margin: new EdgeInsets.all(3.0),
-        padding: new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
+        padding:
+            new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            new Text('YOU', style: new TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),),
-            new Text(chat.msg, )
+            new Text(
+              'YOU',
+              style: new TextStyle(
+                  color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+            new Text(
+              chat.msg,
+            )
           ],
         ),
       );
