@@ -38,7 +38,7 @@ class _State extends State<MyApp> {
   initSocketIO() {
     //update the domain before using
     socketIO = SocketIOManager().createSocketIO(
-        "ec2-3-125-48-69.eu-central-1.compute.amazonaws.com:3000", "/room",
+        "ws://ec2-3-68-97-113.eu-central-1.compute.amazonaws.com:1337", "/room",
         query: "userId=100", socketStatusCallback: _socketStatus);
 
     //call init socket before doing anything
